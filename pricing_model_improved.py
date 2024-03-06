@@ -423,10 +423,12 @@ if __name__ == "__main__":
 
     print_premiums(premium_data)
 
-    # Extensions
-
+    """Extensions"""
+    
+    """Customers may have a large number of drones but warrant that they will only fly a small number (n) at any one time. We would like to charge the full rate for the n drones with the highest calculated premiums, and a fixed base premium of £150 for the remaining drones."""
     drone_fleet = {"AAA-111": 1, "BBB-222": 1, "CCC-333": 1}
 
+    """Most of the risk of damage to cameras comes when they're in the air. If we have more cameras than drones, we would like to charge the full rate for the n cameras with the largest values, and a fixed premium of £50 for the remaining cameras."""
     camera_fleet = {"ZZZ-999": 1, "YYY-888": 1, "XXX-777": 1, "WWW-666": 1}
 
     drone_premiums = drone_fleet_premium(drones, drone_fleet, 3)
