@@ -1,4 +1,4 @@
-# insurance-exposure-rating-algorithm
+# speciality-insurance-pricing-algorithm
 
 ## Description
 
