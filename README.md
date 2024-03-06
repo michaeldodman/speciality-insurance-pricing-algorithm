@@ -1,6 +1,5 @@
 # insurance-exposure-rating-algorithm
 
-# README for Exposure Rating Model for UAVs Python Script
 ## Description
 
 This Python script defines a Drone and DetachableCamera class, which models the exposure rating and insurance premium pricing using the attributes of the drones and cameras detailed in ```Initial File - hx Interview Model.xlsm```.
