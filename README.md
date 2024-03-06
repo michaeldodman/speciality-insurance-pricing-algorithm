@@ -2,7 +2,7 @@
 
 ## Description
 
-This Python script defines a Drone and DetachableCamera class, which models the exposure rating and insurance premium pricing using the attributes of the drones and cameras detailed in ```Initial File - hx Interview Model.xlsm```.
+This Python script defines a Drone and DetachableCamera class, which models the exposure rating and insurance premium pricing using the attributes of the drones and cameras detailed in ```Initial Model.xlsm```.
 
 The Python file ```pricing_model_improved.py``` is a modified version of the orignally submitted ```pricing_model.py``` with changes to improve error handling and efficiency.
 ## Dependencies
@@ -18,13 +18,13 @@ For Extension 1 and 2, the user must input the quantities of each drone and deta
 ### Create an instance of the Drone class
     drone_instance = Drone(Serial Number, Value, Weight, Has Detachable Camera?, TPL Limit, TPL Excess)
 
-Drone instances of the drones detailed in the file ```Initial File - hx Interview Model.xlsm``` have already been created in the script.
+Drone instances of the drones detailed in the file ```Initial Model.xlsm``` have already been created in the script.
 
 ### Create an instance of the Camera class
     camera_instance = DetachableCamera(Drones, Serial Number, Value)
 
 
-Detachable camera instances of the detachable cameras detailed in the file ```Initial File - hx Interview Model.xlsm``` have already been created in the script.
+Detachable camera instances of the detachable cameras detailed in the file ```Initial Model.xlsm``` have already been created in the script.
 
 ### Extension 1 - Input Fleet of Drones
 
