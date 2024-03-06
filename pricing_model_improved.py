@@ -15,12 +15,7 @@ class Drone:
     base_rate = {"Hull": 0.06, "Liability": 0.02}
     riebesell_curve_base_limit = 1000000
     riebesell_curve_z = 0.2
-    weight_adjustments = [
-        ((0, 5), 1),
-        ((5, 10), 1.2),
-        ((10, 20), 1.6),
-        ((20, None), 2.5),
-    ]
+    weight_adjustments = {"0 - 5kg": 1, "5 - 10kg": 1.2, "10 - 20kg": 1.6, ">20kg": 2.5}
 
     def __init__(
         self,
@@ -42,6 +37,19 @@ class Drone:
             TPL_limit (int): Third-party liability limit.
             TPL_excess (int): Third-party liability excess amount.
         """
+        if not isinstance(serial_number, str) or not serial_number:
+            raise ValueError("Serial number must be a non-empty string.")
+        if not isinstance(value, int) or value < 0:
+            raise ValueError("Value must be a non-negative integer.")
+        if weight not in Drone.weight_adjustments:
+            raise ValueError("Weight must be a string inequality.")
+        if not isinstance(has_detachable_camera, bool):
+            raise ValueError("has_detachable_camera must be a boolean.")
+        if not isinstance(TPL_limit, int) or TPL_limit <= 0:
+            raise ValueError("TPL_limit must be a positive integer.")
+        if not isinstance(TPL_excess, int) or TPL_excess < 0:
+            raise ValueError("TPL_excess must be a non-negative integer.")
+
         self.serial_number = serial_number
         self.value = value
         self.weight = weight
@@ -84,12 +92,7 @@ class Drone:
             self.hull_premium = None
         else:
             self.hull_base_rate = Drone.base_rate["Hull"]
-
-            weight_range_tuple = Drone.parse_weight_range(self.weight)  
-            for tuple, adjustment in Drone.weight_adjustments:
-                if tuple == weight_range_tuple:
-                    self.hull_weight_adjustment = adjustment
-
+            self.hull_weight_adjustment = Drone.weight_adjustments[self.weight]
             self.hull_final_rate = self.hull_base_rate * self.hull_weight_adjustment
             self.hull_premium = self.value * self.hull_final_rate
 
@@ -105,33 +108,14 @@ class Drone:
             self.TPL_ILF = None
             self.TPL_layer_premium = None
         else:
-            # TPL Base Rate
             self.TPL_base_rate = Drone.base_rate["Liability"]
-            # TPL Base Layer Premium
             self.TPL_base_layer_premium = self.value * self.TPL_base_rate
-            # TPL ILF
             self.TPL_ILF = Drone.riebesell(
                 self.TPL_limit + self.TPL_excess,
             ) - Drone.riebesell(
                 self.TPL_excess,
             )
-            # TPL Layer Premium
             self.TPL_layer_premium = self.TPL_base_layer_premium * self.TPL_ILF
-
-    def parse_weight_range(weight: str) -> tuple[int, int]:
-        """
-        Parse a weight range string into a tuple of integers.
-
-        Args:
-            weight (str): The weight range string, typically in the format 'X - Ykg'.
-
-        Returns:
-            tuple[int, int]: A tuple containing the lower and upper bounds of the weight range.
-        """
-        parts = weight.replace("kg", "").split("-")
-        lower = int(parts[0].strip())
-        upper = int(parts[1].strip())
-        return (lower, upper)
 
     def riebesell(x: int) -> float:
         """
@@ -222,52 +206,6 @@ class DetachableCamera:
         ).hull_final_rate
 
 
-details = {
-    "Insured": "Drones R Us",
-    "Underwriter": "Michael",
-    "Broker": "Aon",
-    "Brokerage": 0.3,
-}
-
-drones = [
-    Drone("AAA-111", 10000, "0 - 5kg", True, 1000000, 0),
-    Drone("BBB-222", 12000, "10 - 20kg", False, 4000000, 1000000),
-    Drone("CCC-333", 15000, "5 - 10kg", True, 5000000, 5000000),
-]
-
-for drone in drones:
-    drone.hull_calculations()
-    drone.TPL_calculations()
-
-detachable_cameras = [
-    DetachableCamera(drones, "ZZZ-999", 5000),
-    DetachableCamera(drones, "YYY-888", 2500),
-    DetachableCamera(drones, "XXX-777", 1500),
-    DetachableCamera(drones, "WWW-666", 2000),
-]
-
-for camera in detachable_cameras:
-    camera.calculations()
-
-drone_hull_net = sum(drone.hull_premium for drone in drones)
-drone_TPL_net = sum(drone.TPL_layer_premium for drone in drones)
-camera_hull_net = sum(camera.premium for camera in detachable_cameras)
-
-drone_hull_gross = drone_hull_net / (1 - details["Brokerage"])
-drone_TPL_gross = drone_TPL_net / (1 - details["Brokerage"])
-camera_hull_gross = camera_hull_net / (1 - details["Brokerage"])
-
-total_net = drone_hull_net + drone_TPL_net + camera_hull_net
-total_gross = drone_hull_gross + drone_TPL_gross + camera_hull_gross
-
-premium_data = [
-    ("Drone - Hull", drone_hull_net, drone_hull_gross),
-    ("Drone - TPL", drone_TPL_net, drone_TPL_gross),
-    ("Camera - Hull", camera_hull_net, camera_hull_gross),
-    ("Total", total_net, total_gross),
-]
-
-
 def print_premiums(rows):
     """
     Print a formatted table of insurance premiums.
@@ -288,18 +226,6 @@ def print_premiums(rows):
 
     for description, net, gross in rows:
         print(f"{description.ljust(max_desc_length)} | {net:10.0f} | {gross:10.0f}")
-
-
-for drone in drones:
-    print(drone, "\n")
-
-for camera in detachable_cameras:
-    print(camera, "\n")
-
-print_premiums(premium_data)
-
-
-# Extensions
 
 
 def front_load_list(input_list: list[int], n: int) -> list[int]:
@@ -415,20 +341,6 @@ def camera_fleet_premium(
     return hull_net_premium
 
 
-drone_fleet = {"AAA-111": 1, "BBB-222": 1, "CCC-333": 1}
-
-camera_fleet = {"ZZZ-999": 1, "YYY-888": 1, "XXX-777": 1, "WWW-666": 1}
-
-drone_premiums = drone_fleet_premium(drones, drone_fleet, 3)
-
-camera_premiums = camera_fleet_premium(
-    detachable_cameras,
-    camera_fleet,
-    sum(drone_fleet.values()),
-    sum(camera_fleet.values()),
-)
-
-
 def print_extension_premiums(
     drone_premiums: tuple[float, float, float], camera_premiums: int, brokerage: float
 ):
@@ -456,4 +368,74 @@ def print_extension_premiums(
     print_premiums(data)
 
 
-print_extension_premiums(drone_premiums, camera_premiums, details["Brokerage"])
+if __name__ == "__main__":
+
+    details = {
+        "Insured": "Drones R Us",
+        "Underwriter": "Michael",
+        "Broker": "Aon",
+        "Brokerage": 0.3,
+    }
+
+    drones = [
+        Drone("AAA-111", 10000, "0 - 5kg", True, 1000000, 0),
+        Drone("BBB-222", 12000, "10 - 20kg", False, 4000000, 1000000),
+        Drone("CCC-333", 15000, "5 - 10kg", True, 5000000, 5000000),
+    ]
+
+    for drone in drones:
+        drone.hull_calculations()
+        drone.TPL_calculations()
+
+    detachable_cameras = [
+        DetachableCamera(drones, "ZZZ-999", 5000),
+        DetachableCamera(drones, "YYY-888", 2500),
+        DetachableCamera(drones, "XXX-777", 1500),
+        DetachableCamera(drones, "WWW-666", 2000),
+    ]
+
+    for camera in detachable_cameras:
+        camera.calculations()
+
+    drone_hull_net = sum(drone.hull_premium for drone in drones)
+    drone_TPL_net = sum(drone.TPL_layer_premium for drone in drones)
+    camera_hull_net = sum(camera.premium for camera in detachable_cameras)
+
+    drone_hull_gross = drone_hull_net / (1 - details["Brokerage"])
+    drone_TPL_gross = drone_TPL_net / (1 - details["Brokerage"])
+    camera_hull_gross = camera_hull_net / (1 - details["Brokerage"])
+
+    total_net = drone_hull_net + drone_TPL_net + camera_hull_net
+    total_gross = drone_hull_gross + drone_TPL_gross + camera_hull_gross
+
+    premium_data = [
+        ("Drone - Hull", drone_hull_net, drone_hull_gross),
+        ("Drone - TPL", drone_TPL_net, drone_TPL_gross),
+        ("Camera - Hull", camera_hull_net, camera_hull_gross),
+        ("Total", total_net, total_gross),
+    ]
+
+    for drone in drones:
+        print(drone, "\n")
+
+    for camera in detachable_cameras:
+        print(camera, "\n")
+
+    print_premiums(premium_data)
+
+    # Extensions
+
+    drone_fleet = {"AAA-111": 1, "BBB-222": 1, "CCC-333": 1}
+
+    camera_fleet = {"ZZZ-999": 1, "YYY-888": 1, "XXX-777": 1, "WWW-666": 1}
+
+    drone_premiums = drone_fleet_premium(drones, drone_fleet, 3)
+
+    camera_premiums = camera_fleet_premium(
+        detachable_cameras,
+        camera_fleet,
+        sum(drone_fleet.values()),
+        sum(camera_fleet.values()),
+    )
+
+    print_extension_premiums(drone_premiums, camera_premiums, details["Brokerage"])
