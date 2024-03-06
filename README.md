@@ -4,8 +4,7 @@
 
 This Python script defines a Drone and DetachableCamera class, which models the exposure rating and insurance premium pricing using the attributes of the drones and cameras detailed in ```Initial File - hx Interview Model.xlsm```.
 
-The Python file ```pricing_model_improved.py``` is a modified version of the orignally submitted ```pricing_model.py``` with changes that were suggested during the technical interview with hyperexponential for a Junior Model Developer role.
-
+The Python file ```pricing_model_improved.py``` is a modified version of the orignally submitted ```pricing_model.py``` with changes to improve error handling and efficiency.
 ## Dependencies
 
 To use this script, ensure you have Python installed on your system. No additional libraries are required as the script uses standard Python libraries.
